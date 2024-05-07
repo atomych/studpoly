@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import EntryPage from "../views/EntryPage.vue";
 import RoomPage from "../views/RoomPage.vue";
 import GamePage from "../views/GamePage.vue";
+import CreatePage from "../views/CreatePage.vue";
 
 const routes = [
   {
@@ -18,6 +19,11 @@ const routes = [
     path: "/game",
     name: "game",
     component: GamePage,
+  },
+  {
+    path: "/create",
+    name: "create",
+    component: CreatePage,
   },
 ];
 
