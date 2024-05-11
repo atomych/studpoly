@@ -5,12 +5,12 @@
         <a href="">О игре</a>
       </div>
       <div class="nickname">
-        <input type="text" class="field" />
-        <button class="save">Сохранить</button>
+        <input type="text" class="field" v-model="name" />
+        <button class="save" @click="changeName()">Сохранить</button>
       </div>
       <img src="../assets/img/1.png" alt="" />
       <div class="btns">
-        <button class="create">
+        <button class="create" @click="createRoom()">
           Создание <br />
           комнаты
         </button>
@@ -29,10 +29,28 @@
             <h2>Код комнаты</h2>
             <h2>Кол-во Игроков</h2>
           </div>
-          <div class="rooms__item">
-            <h2 class="code">1834</h2>
-            <h2 class="players">3</h2>
-            <button class="connect">Подключиться</button>
+          <div
+            class="rooms__item"
+            v-for="room in rooms"
+            :key="room.id"
+            :class="room.id == 'bot12' ? 'none' : ''"
+          >
+            <h2 class="code">{{ room.id }}</h2>
+            <h2 class="players">{{ room.players.length }}</h2>
+            <button
+              class="connect"
+              v-if="room.players.indexOf(id) == -1"
+              @click="connect(room.id)"
+            >
+              Подключиться
+            </button>
+            <button
+              class="disconnect"
+              v-if="room.players.indexOf(id) != -1"
+              @click="disconnect()"
+            >
+              Отключиться
+            </button>
           </div>
         </div>
       </div>
@@ -254,6 +272,12 @@
 
     font-size: 16px;
 
+    margin-bottom: 10px;
+
+    &.none {
+      display: none;
+    }
+
     .code {
       width: 166px;
       text-align: center;
@@ -278,7 +302,110 @@
 </style>
 
 <script>
+import { getKey } from "../js/key";
+import { subscribeToUpadate, writeData } from "../firebase/database";
+
 export default {
   name: "EntryPage",
+
+  data() {
+    return {
+      name: "player",
+      id: "",
+      rooms: [],
+    };
+  },
+
+  created() {
+    // переадресация в игру, если найдется комната state = game
+    // ...
+
+    if (localStorage.getItem("STUDPOLY_PLAYER_ID")) {
+      this.name = localStorage.getItem("STUDPOLY_PLAYER_NAME");
+      this.id = localStorage.getItem("STUDPOLY_PLAYER_ID");
+    } else {
+      localStorage.setItem("STUDPOLY_PLAYER_ID", getKey());
+      localStorage.setItem("STUDPOLY_PLAYER_NAME", "player");
+    }
+
+    subscribeToUpadate("rooms/", (data) => {
+      if (data.val()) {
+        this.rooms = Object.values(data.val()).filter(
+          (item) => item.state == "room"
+        );
+
+        const room = this.rooms.filter(
+          (item) => item.players.indexOf(this.id) != -1
+        );
+
+        if (room.length) {
+          if (room[0].players.length == 4) {
+            console.log("room is full");
+            // переадресация в игру при заполнении комнаты
+            // ...
+            this.$router.push({ name: "game", params: { roomID: room[0].id } });
+          }
+        }
+      }
+    });
+  },
+
+  methods: {
+    changeName() {
+      localStorage.setItem("STUDPOLY_PLAYER_NAME", this.name);
+    },
+
+    createRoom() {
+      const data = this.rooms.filter(
+        (item) => item.players.indexOf(this.id) != -1
+      );
+
+      if (!data.length) {
+        const roomKey = getKey();
+
+        writeData(`rooms/${roomKey}`, {
+          id: roomKey,
+          state: "room",
+          players: [this.id],
+        });
+      } else {
+        if (data[0].players.length > 1) {
+          writeData(
+            `rooms/${data[0].id}/players`,
+            data[0].players.filter((item) => item != this.id)
+          );
+        } else {
+          writeData(`rooms/${data[0].id}/`, null);
+        }
+        this.createRoom();
+      }
+    },
+
+    connect(newID) {
+      const room = this.rooms.filter(
+        (item) => item.players.indexOf(this.id) != -1
+      );
+
+      if (room.length) this.disconnect();
+
+      const newRoom = this.rooms.filter((item) => item.id == newID)[0];
+      writeData(`rooms/${newID}/players`, [...newRoom.players, this.id]);
+    },
+
+    disconnect() {
+      const room = this.rooms.filter(
+        (item) => item.players.indexOf(this.id) != -1
+      )[0];
+
+      if (room.players.length > 1) {
+        writeData(
+          `rooms/${room.id}/players`,
+          room.players.filter((item) => item != this.id)
+        );
+      } else {
+        writeData(`rooms/${room.id}/`, null);
+      }
+    },
+  },
 };
 </script>
