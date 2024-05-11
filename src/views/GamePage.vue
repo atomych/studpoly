@@ -20,8 +20,8 @@
     </div>
     <div class="field">
       <div class="left">
-        <div class="cell corner">
-          <div class="text">поездка к родителям</div>
+        <div class="cell corner start">
+          <div class="text"></div>
         </div>
         <div class="cell default">
           <div class="text">искусство</div>
@@ -291,3 +291,17 @@
   }
 }
 </style>
+
+<script>
+import { CELLS } from "../js/studpoly";
+
+export default {
+  name: "GamePage",
+
+  data() {
+    return {
+      cells: CELLS,
+    };
+  },
+};
+</script>
