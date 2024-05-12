@@ -1,27 +1,19 @@
 <template>
   <div class="container">
     <div class="bar">
-      <div class="player">
-        <div class="name">1</div>
-        <div class="money">22</div>
-      </div>
-      <div class="player">
-        <div class="name">1</div>
-        <div class="money">22</div>
-      </div>
-      <div class="player">
-        <div class="name">1</div>
-        <div class="money">22</div>
-      </div>
-      <div class="player">
-        <div class="name">1</div>
-        <div class="money">22</div>
+      <div class="player" v-for="(item, idx) in roomObj.players" :key="item">
+        <div class="name">
+          {{ roomObj.game.names ? roomObj.game.names[idx] : "" }}
+        </div>
+        <div class="money">
+          {{ roomObj.game.money ? roomObj.game.money[idx] : "" }}
+        </div>
       </div>
     </div>
     <div class="field">
       <div class="left">
         <div class="cell corner start">
-          <div class="text"></div>
+          <field-cell :obj="cells[0]" :text="''"></field-cell>
         </div>
         <div class="cell default red">
           <div class="text">искусство</div>
@@ -56,10 +48,10 @@
       </div>
       <div class="right">
         <div class="cell corner">
-          <div class="text">общежитие</div>
+          <field-cell :obj="cells[10]" :text="'общежитие'"></field-cell>
         </div>
         <div class="cell default red">
-          <div class="text">правоведение</div>
+          <field-cell :obj="cells[11]" :text="'правоведение'"></field-cell>
         </div>
         <div class="cell chance default">
           <div class="text">шанс</div>
@@ -94,34 +86,34 @@
       </div>
       <div class="top">
         <div class="cell default green">
-          <div class="text">биология</div>
+          <field-cell :obj="cells[1]" :text="'биология'"></field-cell>
         </div>
         <div class="cell chance default">
-          <div class="text">шанс</div>
+          <field-cell :obj="cells[2]" :text="'шанс'"></field-cell>
         </div>
         <div class="cell default green">
-          <div class="text">почвоведение</div>
+          <field-cell :obj="cells[3]" :text="'почвоведение'"></field-cell>
         </div>
         <div class="cell default green">
-          <div class="text">экология</div>
+          <field-cell :obj="cells[4]" :text="'экология'"></field-cell>
         </div>
         <div class="cell exam default">
-          <div class="text">экзамен</div>
+          <field-cell :obj="cells[5]" :text="'экзамен'"></field-cell>
         </div>
         <div class="cell default blue">
-          <div class="text">экономика</div>
+          <field-cell :obj="cells[6]" :text="'экономика'"></field-cell>
         </div>
         <div class="cell money default">
-          <div class="text">
-            сбор <br />
-            средств
-          </div>
+          <field-cell :obj="cells[7]" :text="'сбор средств'"></field-cell>
         </div>
         <div class="cell default blue">
-          <div class="text">менеджмент</div>
+          <field-cell :obj="cells[8]" :text="'менеджмент'"></field-cell>
         </div>
         <div class="cell default blue">
-          <div class="text">управление <br />бизнесом</div>
+          <field-cell
+            :obj="cells[9]"
+            :text="'управление бизнесом'"
+          ></field-cell>
         </div>
       </div>
       <div class="bottom">
@@ -152,6 +144,9 @@
         <div class="cell default green">
           <div class="text">бжд</div>
         </div>
+      </div>
+      <div class="window" v-if="canRoll">
+        <button @click="roll()">Бросить</button>
       </div>
     </div>
   </div>
@@ -208,6 +203,24 @@
 
   background: url("../assets/img/background.png");
 
+  .window {
+    width: 200px;
+    height: 200px;
+
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background-color: #fff;
+  }
+
   .left,
   .right {
     display: flex;
@@ -223,7 +236,7 @@
       justify-content: center;
       align-items: center;
 
-      .text {
+      &__wrapper .text {
         text-align: center;
       }
 
@@ -472,6 +485,7 @@
 
 .cell {
   border: 1px solid #000;
+  position: relative;
 
   &.corner {
     width: 125px;
@@ -504,6 +518,9 @@
 
 <script>
 import { CELLS } from "../js/studpoly";
+import { readData, subscribeToUpadate, writeData } from "../firebase/database";
+
+import FieldCell from "../components/FieldCell.vue";
 
 export default {
   name: "GamePage",
@@ -511,7 +528,66 @@ export default {
   data() {
     return {
       cells: CELLS,
+      roomID: "",
+      id: "",
+      roomObj: {},
     };
+  },
+
+  components: { FieldCell },
+
+  created() {
+    // проверка на то что пользователь обновил страницу, а не зашел в первый раз
+    // ...
+
+    this.roomID = this.$route.params.roomID;
+    this.id = localStorage.getItem("STUDPOLY_PLAYER_ID");
+
+    readData(`rooms/${this.roomID}`).then((data) => {
+      this.roomObj = data.val();
+      const names = [];
+
+      // получение имен игроков
+      // ...
+      readData(`names/${this.roomObj.players[0]}`).then((data) => {
+        names.push(data.val());
+        readData(`names/${this.roomObj.players[1]}`).then((data) => {
+          names.push(data.val());
+          readData(`names/${this.roomObj.players[2]}`).then((data) => {
+            names.push(data.val());
+            readData(`names/${this.roomObj.players[3]}`).then((data) => {
+              names.push(data.val());
+
+              this.roomObj.game = {
+                move: 0,
+                names: names,
+                money: [1000, 1000, 1000, 1000],
+                position: [0, 0, 0, 0],
+              };
+
+              for (let i = 0; i < 4; i++) this.cells[0].players.push(i);
+              writeData(`rooms/${this.roomID}`, this.roomObj);
+            });
+          });
+        });
+      });
+    });
+
+    subscribeToUpadate(`rooms/${this.roomID}`, (data) => {
+      this.roomObj = data.val();
+    });
+  },
+
+  methods: {
+    roll() {},
+  },
+
+  computed: {
+    canRoll() {
+      if (this.roomObj.game)
+        return this.roomObj.game.move == this.roomObj.players.indexOf(this.id);
+      else return false;
+    },
   },
 };
 </script>

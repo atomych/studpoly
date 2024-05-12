@@ -324,9 +324,14 @@ export default {
       this.name = localStorage.getItem("STUDPOLY_PLAYER_NAME");
       this.id = localStorage.getItem("STUDPOLY_PLAYER_ID");
     } else {
-      localStorage.setItem("STUDPOLY_PLAYER_ID", getKey());
+      const userID = getKey();
+      this.id = userID;
+
+      localStorage.setItem("STUDPOLY_PLAYER_ID", userID);
       localStorage.setItem("STUDPOLY_PLAYER_NAME", "player");
     }
+
+    writeData(`names/${this.id}`, this.name);
 
     subscribeToUpadate("rooms/", (data) => {
       if (data.val()) {
@@ -344,6 +349,7 @@ export default {
             // переадресация в игру при заполнении комнаты
             // ...
             this.$router.push({ name: "game", params: { roomID: room[0].id } });
+            writeData(`rooms/${room[0].id}/state`, "game");
           }
         }
       }
@@ -352,6 +358,7 @@ export default {
 
   methods: {
     changeName() {
+      writeData(`names/${this.id}`, this.name);
       localStorage.setItem("STUDPOLY_PLAYER_NAME", this.name);
     },
 
