@@ -14,12 +14,17 @@
           Создание <br />
           комнаты
         </button>
-        <div class="roomcode">
+        <div class="roomcode" :class="{ err: codeErr }">
           <div class="text">
             Введи код <br />
             комнаты
           </div>
-          <input type="text" class="code" />
+          <input
+            type="text"
+            class="code"
+            v-model="roomCode"
+            @keydown.enter="connectByCode(roomCode)"
+          />
         </div>
       </div>
       <div class="rooms">
@@ -59,6 +64,36 @@
 </template>
 
 <style lang="scss" scoped>
+@font-face {
+  font-family: "MontMed";
+  src: url("../assets/fonts/MontserratAlternates-Medium.ttf");
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "MontSem";
+  src: url("../assets/fonts/MontserratAlternates-SemiBold.ttf");
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "MontBold";
+  src: url("../assets/fonts/MontserratAlternates-Bold.ttf");
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Moul";
+  src: url("../assets/fonts/Moul-Regular.ttf");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Aven";
+  src: url("../assets/fonts/AVENGEANCE_MIGHTIEST_AVENGER_RUS_0.ttf");
+  font-weight: 400;
+}
+
 .page {
   display: flex;
   flex-direction: column;
@@ -83,11 +118,6 @@
 .top {
   background-color: #f8cf3f;
 
-  color: #000;
-  font-size: 16px;
-  opacity: 0.6;
-  font-weight: 500;
-
   display: flex;
   justify-content: end;
 
@@ -96,6 +126,10 @@
 
   a {
     text-decoration: none;
+    color: #000;
+    font-size: 16px;
+    opacity: 0.6;
+    font-family: "MontMed";
   }
 
   margin-bottom: 20px;
@@ -113,6 +147,7 @@
   margin-bottom: 20px;
 
   .field {
+    font-family: "MontMed";
     border: 2px solid #000;
     outline: none;
 
@@ -121,6 +156,8 @@
 
     padding: 5px 10px;
     font-size: 18px;
+
+    box-shadow: 8px 5px 4px #000;
   }
 
   .save {
@@ -131,10 +168,12 @@
 
     font-size: 18px;
     padding: 5px 10px;
+    padding-bottom: 6px;
 
     top: 1px;
     right: 1px;
 
+    font-family: "MontBold";
     background-color: #ffb966;
   }
 }
@@ -151,11 +190,15 @@
     font-size: 18px;
     text-align: left;
 
-    padding: 5px 10px;
+    padding: 10px 20px;
     padding-right: 70px;
 
     background-color: #aa77c5;
     color: #fff;
+    font-family: "MontSem";
+    font-size: 20px;
+
+    box-shadow: 6px 6px 0px #aa77c5;
 
     cursor: pointer;
 
@@ -185,20 +228,45 @@
     display: flex;
     justify-content: center;
 
+    position: relative;
+
     background-color: #d871a8;
     border: 2px solid #000;
     color: #fff;
 
-    padding: 5px 10px;
+    padding: 10px 10px;
 
     transform: rotate(4deg);
+
+    font-family: "MontSem";
+    font-size: 20px;
+
+    box-shadow: 6px 6px 0px #d871a8;
+
+    &.err::after {
+      content: "";
+      display: block;
+      position: absolute;
+
+      width: 160px;
+      height: 55px;
+
+      background: url("../assets/img/err.png");
+      background-repeat: no-repeat;
+      background-size: contain;
+
+      top: -65%;
+      right: -50%;
+    }
 
     .code {
       border: none;
       padding: 0;
       background-color: #d871a8;
 
-      margin-left: 10px;
+      margin-left: 20px;
+
+      font-family: "Moul";
 
       color: #fff;
       opacity: 0.6;
@@ -221,7 +289,7 @@
   position: relative;
 
   background-color: #fffaea;
-  border: 1px solid #000;
+  border: 2px solid #000;
 
   padding: 20px;
   padding-top: 60px;
@@ -241,6 +309,11 @@
 
     background-color: #00ae8f;
     color: #fff;
+    font-family: "MontBold";
+    font-size: 40px;
+
+    border: 2px solid #000;
+    box-shadow: 6px 6px 0px #00ae8f;
   }
 
   &__inner {
@@ -252,11 +325,14 @@
     .titles {
       display: flex;
 
-      font-size: 16px;
+      font-size: 14px;
+      font-family: "MontBold";
 
       h2 {
         padding: 5px 10px;
         border: 2px solid #000;
+
+        background-color: #fff;
 
         &:first-child {
           margin-right: 15px;
@@ -271,6 +347,7 @@
     display: flex;
 
     font-size: 16px;
+    font-family: "Aven";
 
     margin-bottom: 10px;
 
@@ -279,16 +356,17 @@
     }
 
     .code {
-      width: 166px;
+      width: 185px;
       text-align: center;
 
       padding: 5px 10px;
       border: 2px solid #000;
       margin-right: 15px;
+      background-color: #fff;
     }
 
     .players {
-      width: 196px;
+      width: 201px;
 
       text-align: center;
 
@@ -296,6 +374,22 @@
       border: 2px solid #000;
 
       margin-right: 15px;
+      background-color: #fff;
+    }
+
+    .connect,
+    .disconnect {
+      display: block;
+      flex-grow: 1;
+
+      cursor: pointer;
+
+      background-color: #fff;
+      font-family: "Aven";
+      border: 2px solid #000;
+      font-size: 25px;
+
+      padding: 0;
     }
   }
 }
@@ -313,6 +407,8 @@ export default {
       name: "player",
       id: "",
       rooms: [],
+      codeErr: false,
+      roomCode: "",
     };
   },
 
@@ -367,6 +463,24 @@ export default {
     });
   },
 
+  watch: {
+    roomCode() {
+      this.codeErr = false;
+
+      if (this.roomCode.length > 5)
+        this.roomCode = this.roomCode.substring(0, 5);
+      if (this.roomCode.length == 5) {
+        let res = false;
+
+        for (let item of this.rooms) {
+          if (item.id == this.roomCode) res = true;
+        }
+
+        if (!res) this.codeErr = true;
+      }
+    },
+  },
+
   methods: {
     changeName() {
       writeData(`names/${this.id}`, this.name);
@@ -410,6 +524,11 @@ export default {
       writeData(`rooms/${newID}/players`, [...newRoom.players, this.id]);
     },
 
+    connectByCode(code) {
+      if (this.roomCode.length == 5 && this.codeErr == false && this.id == "")
+        this.connect(code);
+    },
+
     disconnect() {
       const room = this.rooms.filter(
         (item) => item.players.indexOf(this.id) != -1
@@ -423,6 +542,8 @@ export default {
       } else {
         writeData(`rooms/${room.id}/`, null);
       }
+
+      this.id = "";
     },
   },
 };
