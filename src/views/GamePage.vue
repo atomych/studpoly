@@ -20,34 +20,37 @@
           <field-cell :obj="cells[0]" :text="''"></field-cell>
         </div>
         <div class="cell default red">
-          <div class="text">искусство</div>
+          <field-cell :obj="cells[30]" :text="'искусство'"></field-cell>
         </div>
         <div class="cell default red">
-          <div class="text">хореография</div>
+          <field-cell :obj="cells[31]" :text="'хореография'"></field-cell>
         </div>
         <div class="cell money default">
-          <div class="text">сбор <br />средств</div>
+          <field-cell :obj="cells[32]" :text="'сбор средств'"></field-cell>
         </div>
         <div class="cell default red">
-          <div class="text">актерское мастерство</div>
+          <field-cell
+            :obj="cells[33]"
+            :text="'актерское мастерство'"
+          ></field-cell>
         </div>
         <div class="cell exam default">
-          <div class="text">экзамен</div>
+          <field-cell :obj="cells[34]" :text="'экзамен'"></field-cell>
         </div>
         <div class="cell default blue">
-          <div class="text">философия</div>
+          <field-cell :obj="cells[35]" :text="'философия'"></field-cell>
         </div>
         <div class="cell default blue">
-          <div class="text">культурология</div>
+          <field-cell :obj="cells[36]" :text="'культурология'"></field-cell>
         </div>
         <div class="cell chance default">
-          <div class="text">шанс</div>
+          <field-cell :obj="cells[37]" :text="'шанс'"></field-cell>
         </div>
         <div class="cell default blue">
-          <div class="text">социология</div>
+          <field-cell :obj="cells[38]" :text="'социология'"></field-cell>
         </div>
         <div class="cell corner">
-          <div class="text">общежитие</div>
+          <field-cell :obj="cells[39]" :text="'общежитие'"></field-cell>
         </div>
       </div>
       <div class="right">
@@ -58,34 +61,34 @@
           <field-cell :obj="cells[11]" :text="'правоведение'"></field-cell>
         </div>
         <div class="cell chance default">
-          <div class="text">шанс</div>
+          <field-cell :obj="cells[12]" :text="'шанс'"></field-cell>
         </div>
         <div class="cell default red">
-          <div class="text">политология</div>
+          <field-cell :obj="cells[13]" :text="'политология'"></field-cell>
         </div>
         <div class="cell default red">
-          <div class="text">история</div>
+          <field-cell :obj="cells[14]" :text="'история'"></field-cell>
         </div>
         <div class="cell exam default">
-          <div class="text">экзамен</div>
+          <field-cell :obj="cells[15]" :text="'экзамен'"></field-cell>
         </div>
         <div class="cell default blue">
-          <div class="text">информатика</div>
+          <field-cell :obj="cells[16]" :text="'информатика'"></field-cell>
         </div>
         <div class="cell money default">
-          <div class="text">
-            сбор <br />
-            средств
-          </div>
+          <field-cell :obj="cells[17]" :text="'сбор средств'"></field-cell>
         </div>
         <div class="cell default blue">
-          <div class="text">программиро <br />вание</div>
+          <field-cell :obj="cells[18]" :text="'программирование'"></field-cell>
         </div>
         <div class="cell default blue">
-          <div class="text">базы данных</div>
+          <field-cell :obj="cells[19]" :text="'базы данных'"></field-cell>
         </div>
         <div class="cell corner">
-          <div class="text">поездка к родителям</div>
+          <field-cell
+            :obj="cells[20]"
+            :text="'поездка к родителям'"
+          ></field-cell>
         </div>
       </div>
       <div class="top">
@@ -122,31 +125,34 @@
       </div>
       <div class="bottom">
         <div class="cell default blue">
-          <div class="text">теория <br />вероятности</div>
+          <field-cell
+            :obj="cells[21]"
+            :text="'теория вероятности'"
+          ></field-cell>
         </div>
         <div class="cell default blue">
-          <div class="text">линейная <br />алгебра</div>
+          <field-cell :obj="cells[22]" :text="'линейная алгебра'"></field-cell>
         </div>
         <div class="cell money default">
-          <div class="text">сбор средств</div>
+          <field-cell :obj="cells[23]" :text="'сбор средств'"></field-cell>
         </div>
         <div class="cell default blue">
-          <div class="text">высшая <br />математика</div>
+          <field-cell :obj="cells[24]" :text="'высшая математика'"></field-cell>
         </div>
         <div class="cell exam default">
-          <div class="text">экзамен</div>
+          <field-cell :obj="cells[25]" :text="'экзамен'"></field-cell>
         </div>
         <div class="cell money default">
-          <div class="text">сбор <br />средств</div>
+          <field-cell :obj="cells[26]" :text="'сбор средств'"></field-cell>
         </div>
         <div class="cell default green">
-          <div class="text">физкультура</div>
+          <field-cell :obj="cells[27]" :text="'физкультура'"></field-cell>
         </div>
         <div class="cell chance default">
-          <div class="text">шанс</div>
+          <field-cell :obj="cells[28]" :text="'шанс'"></field-cell>
         </div>
         <div class="cell default green">
-          <div class="text">бжд</div>
+          <field-cell :obj="cells[29]" :text="'бжд'"></field-cell>
         </div>
       </div>
       <div class="window" v-if="canRoll">
@@ -541,9 +547,6 @@ export default {
   components: { FieldCell },
 
   created() {
-    // проверка на то что пользователь обновил страницу, а не зашел в первый раз
-    // ...
-
     this.roomID = this.$route.params.roomID;
     this.id = localStorage.getItem("STUDPOLY_PLAYER_ID");
 
@@ -551,30 +554,42 @@ export default {
       this.roomObj = data.val();
       const names = [];
 
-      // получение имен игроков
+      // проверка на то что пользователь обновил страницу, а не зашел в первый раз
       // ...
-      readData(`names/${this.roomObj.players[0]}`).then((data) => {
-        names.push(data.val());
-        readData(`names/${this.roomObj.players[1]}`).then((data) => {
+      if (this.roomObj.game) {
+        console.log("try to connect...");
+        // заполнение поля если пользователь обновил страницу
+        // ...
+        for (let i = 0; i < 4; i++) {
+          const item = this.roomObj.game.position[i];
+          this.cells[item].players.push(i);
+        }
+      } else {
+        // получение имен игроков
+        // ...
+        readData(`names/${this.roomObj.players[0]}`).then((data) => {
           names.push(data.val());
-          readData(`names/${this.roomObj.players[2]}`).then((data) => {
+          readData(`names/${this.roomObj.players[1]}`).then((data) => {
             names.push(data.val());
-            readData(`names/${this.roomObj.players[3]}`).then((data) => {
+            readData(`names/${this.roomObj.players[2]}`).then((data) => {
               names.push(data.val());
+              readData(`names/${this.roomObj.players[3]}`).then((data) => {
+                names.push(data.val());
 
-              this.roomObj.game = {
-                move: 0,
-                names: names,
-                money: [1000, 1000, 1000, 1000],
-                position: [0, 0, 0, 0],
-              };
+                this.roomObj.game = {
+                  move: 0,
+                  names: names,
+                  money: [1000, 1000, 1000, 1000],
+                  position: [0, 0, 0, 0],
+                };
 
-              for (let i = 0; i < 4; i++) this.cells[0].players.push(i);
-              writeData(`rooms/${this.roomID}`, this.roomObj);
+                for (let i = 0; i < 4; i++) this.cells[0].players.push(i);
+                writeData(`rooms/${this.roomID}`, this.roomObj);
+              });
             });
           });
         });
-      });
+      }
     });
 
     subscribeToUpadate(`rooms/${this.roomID}`, (data) => {
@@ -583,7 +598,47 @@ export default {
   },
 
   methods: {
-    roll() {},
+    roll() {
+      const firstNum = Math.floor(Math.random() * 6 + 1);
+      const secondNum = Math.floor(Math.random() * 6 + 1);
+      const sum = firstNum + secondNum;
+      const currentPos = this.roomObj.game.position[this.roomObj.game.move];
+      let newPos = 0;
+
+      if (sum + currentPos < 39) newPos = sum + currentPos;
+      else newPos = sum - (39 - currentPos) - 1;
+
+      this.cells[currentPos].players = this.cells[currentPos].players.filter(
+        (item) => item != this.roomObj.game.move
+      );
+      this.cells[newPos].players.push(this.roomObj.game.move);
+
+      writeData(
+        `rooms/${this.roomObj.id}/game/position/${this.roomObj.game.move}`,
+        newPos
+      );
+
+      // Информация о передвижении игрока появилась у других, но ход еще не передался дальше
+      // Здесь идет обработка клетки куда наступил игрок
+      // Другие игроки видят у себя, что игрок что то делает, но ходить пока не могут
+      // ...
+      // ... обработка клетки
+      let newBalance = 1000;
+      // ...
+      // Произошла обработка клетки, игрок выполнил действия
+      // Теперь надо передать ход, изменить баланс игрока
+
+      writeData(
+        `rooms/${this.roomID}/game/money/${this.roomObj.game.move}`,
+        newBalance
+      );
+
+      let newMove = 0;
+      if (this.roomObj.game.move == 3) newMove = 0;
+      else newMove = this.roomObj.game.move + 1;
+
+      writeData(`rooms/${this.roomID}/game/move`, newMove);
+    },
   },
 
   computed: {
