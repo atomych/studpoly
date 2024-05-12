@@ -2,7 +2,7 @@
   <div class="page">
     <div class="container">
       <div class="top">
-        <a href="">О игре</a>
+        <a href="" @click.prevent="toRools()">о игре</a>
       </div>
       <div class="nickname">
         <input type="text" class="field" v-model="name" />
@@ -485,6 +485,10 @@ export default {
     changeName() {
       writeData(`names/${this.id}`, this.name);
       localStorage.setItem("STUDPOLY_PLAYER_NAME", this.name);
+    },
+
+    toRools() {
+      this.$router.push({ name: "rools" });
     },
 
     createRoom() {
