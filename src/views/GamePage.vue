@@ -1,12 +1,16 @@
 <template>
   <div class="container">
     <div class="bar">
-      <div class="player" v-for="(item, idx) in roomObj.players" :key="item">
+      <div
+        class="player"
+        v-for="(item, idx) in roomObj?.game?.names"
+        :key="idx"
+      >
         <div class="name">
-          {{ roomObj.game.names ? roomObj.game.names[idx] : "" }}
+          {{ item }}
         </div>
         <div class="money">
-          {{ roomObj.game.money ? roomObj.game.money[idx] : "" }}
+          {{ roomObj.game.money[idx] }}
         </div>
       </div>
     </div>

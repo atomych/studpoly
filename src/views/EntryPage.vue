@@ -303,7 +303,7 @@
 
 <script>
 import { getKey } from "../js/key";
-import { subscribeToUpadate, writeData } from "../firebase/database";
+import { readData, subscribeToUpadate, writeData } from "../firebase/database";
 
 export default {
   name: "EntryPage",
@@ -330,6 +330,17 @@ export default {
       localStorage.setItem("STUDPOLY_PLAYER_ID", userID);
       localStorage.setItem("STUDPOLY_PLAYER_NAME", "player");
     }
+
+    readData(`rooms/`).then((data) => {
+      const rooms = data.val();
+      const playerID = localStorage.getItem("STUDPOLY_PLAYER_ID");
+
+      for (let item of Object.values(rooms)) {
+        if (item.players.indexOf(playerID) != -1 && item.state == "game") {
+          this.$router.push({ name: "game", params: { roomID: item.id } });
+        }
+      }
+    });
 
     writeData(`names/${this.id}`, this.name);
 
