@@ -176,6 +176,16 @@
           <button @click="roll()" v-if="canRoll">Бросить</button>
         </div>
       </div>
+      <div class="mask" v-if="question"></div>
+      <div class="question" v-if="question">
+        <div class="text">fdsfsdfsfs</div>
+        <div class="answers">
+          <div class="answer a1">1</div>
+          <div class="answer a2">2</div>
+          <div class="answer a3">3</div>
+          <div class="answer a4">4</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -184,6 +194,12 @@
 @font-face {
   font-family: "Lobelia";
   src: url("../assets/fonts/Lobelia.ttf");
+}
+
+@font-face {
+  font-family: "Aven";
+  src: url("../assets/fonts/AVENGEANCE_MIGHTIEST_AVENGER_RUS_0.ttf");
+  font-weight: 400;
 }
 
 .container {
@@ -223,6 +239,94 @@
   max-width: 1015px;
 
   background: url("../assets/img/background.png");
+
+  .mask {
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: #000;
+    opacity: 0.4;
+
+    z-index: 100;
+  }
+
+  .question {
+    position: absolute;
+
+    width: 70%;
+    height: 300px;
+
+    background-color: #faebdb;
+    border: 1px solid #000;
+
+    top: 50%;
+    left: 50%;
+    z-index: 200;
+
+    transform: translate(-50%, -50%);
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 20px 10px;
+
+    .text {
+      font-family: "Aven";
+      font-size: 30px;
+      text-align: center;
+
+      margin-bottom: 30px;
+    }
+
+    .answers {
+      flex-grow: 1;
+
+      padding: 30px;
+
+      position: relative;
+
+      .answer {
+        position: absolute;
+
+        font-family: "Aven";
+        font-size: 20px;
+        color: #fff;
+        background-color: #45ac8f;
+        border-radius: 25px;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        width: 300px;
+        height: 50px;
+
+        cursor: pointer;
+
+        &.a1 {
+          top: 10px;
+          left: 10px;
+        }
+
+        &.a2 {
+          top: 10px;
+          right: 10px;
+        }
+
+        &.a3 {
+          bottom: 10px;
+          left: 10px;
+        }
+
+        &.a4 {
+          bottom: 10px;
+          right: 10px;
+        }
+      }
+    }
+  }
 
   .window {
     width: 500px;
@@ -581,6 +685,7 @@ export default {
       id: "",
       roomObj: {},
       messageText: "",
+      question: null,
     };
   },
 
