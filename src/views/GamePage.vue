@@ -1,18 +1,21 @@
 <template>
   <div class="container">
     <div class="bar">
-      <div
-        class="player"
-        v-for="(item, idx) in roomObj?.game?.names"
+      <game-player
+        :name="mainPlayer.name"
+        :money="mainPlayer.money"
+        :photo="mainPlayer.photo"
+        class="pf"
+        :main="true"
+      />
+      <game-player
+        :name="item.name"
+        :money="item.money"
+        :photo="item.photo"
+        class="of"
+        v-for="(item, idx) in otherPlayers"
         :key="idx"
-      >
-        <div class="name">
-          {{ item }}
-        </div>
-        <div class="money">
-          {{ roomObj.game.money[idx] }}
-        </div>
-      </div>
+      />
     </div>
     <div class="field">
       <div class="left">
@@ -20,37 +23,37 @@
           <field-cell :obj="cells[0]" :text="''"></field-cell>
         </div>
         <div class="cell default red">
-          <field-cell :obj="cells[30]" :text="'искусство'"></field-cell>
+          <field-cell :obj="cells[39]" :text="'искусство'"></field-cell>
         </div>
         <div class="cell default red">
-          <field-cell :obj="cells[31]" :text="'хореография'"></field-cell>
+          <field-cell :obj="cells[38]" :text="'хореография'"></field-cell>
         </div>
         <div class="cell money default">
-          <field-cell :obj="cells[32]" :text="'сбор средств'"></field-cell>
+          <field-cell :obj="cells[37]" :text="'сбор средств'"></field-cell>
         </div>
         <div class="cell default red">
           <field-cell
-            :obj="cells[33]"
+            :obj="cells[36]"
             :text="'актерское мастерство'"
           ></field-cell>
         </div>
         <div class="cell exam default">
-          <field-cell :obj="cells[34]" :text="'экзамен'"></field-cell>
+          <field-cell :obj="cells[35]" :text="'экзамен'"></field-cell>
         </div>
         <div class="cell default blue">
-          <field-cell :obj="cells[35]" :text="'философия'"></field-cell>
+          <field-cell :obj="cells[34]" :text="'философия'"></field-cell>
         </div>
         <div class="cell default blue">
-          <field-cell :obj="cells[36]" :text="'культурология'"></field-cell>
+          <field-cell :obj="cells[33]" :text="'культурология'"></field-cell>
         </div>
         <div class="cell chance default">
-          <field-cell :obj="cells[37]" :text="'шанс'"></field-cell>
+          <field-cell :obj="cells[32]" :text="'шанс'"></field-cell>
         </div>
         <div class="cell default blue">
-          <field-cell :obj="cells[38]" :text="'социология'"></field-cell>
+          <field-cell :obj="cells[31]" :text="'социология'"></field-cell>
         </div>
         <div class="cell corner">
-          <field-cell :obj="cells[39]" :text="'общежитие'"></field-cell>
+          <field-cell :obj="cells[30]" :text="'общежитие'"></field-cell>
         </div>
       </div>
       <div class="right">
@@ -131,28 +134,28 @@
           ></field-cell>
         </div>
         <div class="cell default blue">
-          <field-cell :obj="cells[22]" :text="'линейная алгебра'"></field-cell>
+          <field-cell :obj="cells[29]" :text="'линейная алгебра'"></field-cell>
         </div>
         <div class="cell money default">
-          <field-cell :obj="cells[23]" :text="'сбор средств'"></field-cell>
+          <field-cell :obj="cells[28]" :text="'сбор средств'"></field-cell>
         </div>
         <div class="cell default blue">
-          <field-cell :obj="cells[24]" :text="'высшая математика'"></field-cell>
+          <field-cell :obj="cells[27]" :text="'высшая математика'"></field-cell>
         </div>
         <div class="cell exam default">
-          <field-cell :obj="cells[25]" :text="'экзамен'"></field-cell>
+          <field-cell :obj="cells[26]" :text="'экзамен'"></field-cell>
         </div>
         <div class="cell money default">
-          <field-cell :obj="cells[26]" :text="'сбор средств'"></field-cell>
+          <field-cell :obj="cells[25]" :text="'сбор средств'"></field-cell>
         </div>
         <div class="cell default green">
-          <field-cell :obj="cells[27]" :text="'физкультура'"></field-cell>
+          <field-cell :obj="cells[24]" :text="'физкультура'"></field-cell>
         </div>
         <div class="cell chance default">
-          <field-cell :obj="cells[28]" :text="'шанс'"></field-cell>
+          <field-cell :obj="cells[23]" :text="'шанс'"></field-cell>
         </div>
         <div class="cell default green">
-          <field-cell :obj="cells[29]" :text="'бжд'"></field-cell>
+          <field-cell :obj="cells[22]" :text="'бжд'"></field-cell>
         </div>
       </div>
       <div class="window" v-if="canRoll">
@@ -174,31 +177,24 @@
   display: flex;
   justify-content: center;
 
-  padding: 20px 0;
+  padding: 20px;
 }
 
 .bar {
   display: flex;
   flex-direction: column;
+  align-items: end;
 
   margin-right: 50px;
 
-  .player {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+  width: 300px;
 
-    margin-bottom: 50px;
+  .pf {
+    margin-bottom: 40px;
+  }
 
-    width: 100px;
-    height: 100px;
-
-    border: 1px solid #000;
-
-    .name {
-      margin-bottom: 10px;
-    }
+  .of {
+    margin-bottom: 20px;
   }
 }
 
@@ -531,6 +527,7 @@ import { CELLS } from "../js/studpoly";
 import { readData, subscribeToUpadate, writeData } from "../firebase/database";
 
 import FieldCell from "../components/FieldCell.vue";
+import GamePlayer from "../components/GamePlayer.vue";
 
 export default {
   name: "GamePage",
@@ -544,7 +541,7 @@ export default {
     };
   },
 
-  components: { FieldCell },
+  components: { FieldCell, GamePlayer },
 
   created() {
     this.roomID = this.$route.params.roomID;
@@ -597,6 +594,47 @@ export default {
     });
   },
 
+  computed: {
+    mainPlayer() {
+      const res = {};
+
+      if (this.roomObj.game) {
+        const idx = this.roomObj.players.indexOf(this.id);
+        res.name = this.roomObj.game.names[idx];
+        res.money = this.roomObj.game.money[idx];
+        res.photo = idx;
+      }
+
+      return res;
+    },
+
+    otherPlayers() {
+      const res = [];
+
+      if (this.roomObj.game) {
+        const idx = this.roomObj.players.indexOf(this.id);
+
+        for (let i = 0; i < 4; i++) {
+          if (i != idx) {
+            res.push({
+              name: this.roomObj.game.names[i],
+              money: this.roomObj.game.money[i],
+              photo: i,
+            });
+          }
+        }
+      }
+
+      return res;
+    },
+
+    canRoll() {
+      if (this.roomObj.game)
+        return this.roomObj.game.move == this.roomObj.players.indexOf(this.id);
+      else return false;
+    },
+  },
+
   methods: {
     roll() {
       const firstNum = Math.floor(Math.random() * 6 + 1);
@@ -638,14 +676,6 @@ export default {
       else newMove = this.roomObj.game.move + 1;
 
       writeData(`rooms/${this.roomID}/game/move`, newMove);
-    },
-  },
-
-  computed: {
-    canRoll() {
-      if (this.roomObj.game)
-        return this.roomObj.game.move == this.roomObj.players.indexOf(this.id);
-      else return false;
     },
   },
 };
