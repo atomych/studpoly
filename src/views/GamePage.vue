@@ -158,8 +158,23 @@
           <field-cell :obj="cells[22]" :text="'бжд'"></field-cell>
         </div>
       </div>
-      <div class="window" v-if="canRoll">
-        <button @click="roll()">Бросить</button>
+      <div class="window">
+        <div class="chat">
+          <div class="messages">
+            <div
+              class="messages__item"
+              v-for="(item, idx) in messagesList"
+              :key="idx"
+            >
+              {{ item }}
+            </div>
+          </div>
+          <input type="text" class="text" v-model="messageText" />
+          <button class="send" @click="sendMessage()">Отправить</button>
+        </div>
+        <div class="btns">
+          <button @click="roll()" v-if="canRoll">Бросить</button>
+        </div>
       </div>
     </div>
   </div>
@@ -210,8 +225,8 @@
   background: url("../assets/img/background.png");
 
   .window {
-    width: 200px;
-    height: 200px;
+    width: 500px;
+    height: 500px;
 
     position: absolute;
 
@@ -221,10 +236,37 @@
     transform: translate(-50%, -50%);
 
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
 
     background-color: #fff;
+
+    padding: 10px;
+
+    .chat {
+      width: 300px;
+      height: 400px;
+      border: 1px solid #000;
+
+      display: flex;
+      flex-direction: column;
+
+      .messages {
+        flex-grow: 1;
+        margin-bottom: 10px;
+
+        overflow-y: scroll;
+
+        &__item {
+          font-size: 18px;
+          margin-bottom: 5px;
+        }
+      }
+
+      .text {
+        border: 1px solid #000;
+      }
+    }
   }
 
   .left,
@@ -538,6 +580,7 @@ export default {
       roomID: "",
       id: "",
       roomObj: {},
+      messageText: "",
     };
   },
 
@@ -578,6 +621,9 @@ export default {
                   names: names,
                   money: [1000, 1000, 1000, 1000],
                   position: [0, 0, 0, 0],
+                  messages: [
+                    { from: "Система", text: "Добро пожаловать в вузополию!" },
+                  ],
                 };
 
                 for (let i = 0; i < 4; i++) this.cells[0].players.push(i);
@@ -622,6 +668,18 @@ export default {
               photo: i,
             });
           }
+        }
+      }
+
+      return res;
+    },
+
+    messagesList() {
+      const res = [];
+
+      if (this.roomObj.game) {
+        for (let item of this.roomObj.game.messages) {
+          res.push(`${item.from}: ${item.text}`);
         }
       }
 
@@ -676,6 +734,20 @@ export default {
       else newMove = this.roomObj.game.move + 1;
 
       writeData(`rooms/${this.roomID}/game/move`, newMove);
+    },
+
+    sendMessage() {
+      if (this.messageText.length) {
+        writeData(`rooms/${this.roomID}/game/messages`, [
+          ...this.roomObj.game.messages,
+          {
+            from: localStorage.getItem("STUDPOLY_PLAYER_NAME"),
+            text: this.messageText,
+          },
+        ]);
+
+        this.messageText = "";
+      }
     },
   },
 };
