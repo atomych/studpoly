@@ -3,7 +3,9 @@
     <div
       class="text"
       :class="{
-        f12: ['exam', 'money'].indexOf(obj.type) != -1,
+        f12:
+          ['exam', 'money', 'home', 'tohome', 'to start'].indexOf(obj.type) !=
+          -1,
         left: [31, 32, 33, 34, 35, 36, 37, 38, 39].indexOf(obj.id) != -1,
         right: [11, 12, 13, 14, 15, 16, 17, 18, 19].indexOf(obj.id) != -1,
       }"

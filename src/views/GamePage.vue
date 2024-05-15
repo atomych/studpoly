@@ -58,7 +58,7 @@
       </div>
       <div class="right">
         <div class="cell corner">
-          <field-cell :obj="cells[10]" :text="'общежитие'"></field-cell>
+          <field-cell :obj="cells[10]" :text="'навестить друга'"></field-cell>
         </div>
         <div class="cell default red">
           <field-cell :obj="cells[11]" :text="'правоведение'"></field-cell>
@@ -82,7 +82,7 @@
           <field-cell :obj="cells[17]" :text="'сбор средств'"></field-cell>
         </div>
         <div class="cell default blue">
-          <field-cell :obj="cells[18]" :text="'программирование'"></field-cell>
+          <field-cell :obj="cells[18]" :text="'прога'"></field-cell>
         </div>
         <div class="cell default blue">
           <field-cell :obj="cells[19]" :text="'базы данных'"></field-cell>
@@ -426,7 +426,7 @@
   .question {
     position: absolute;
 
-    width: 70%;
+    width: 90%;
     height: 300px;
 
     background-color: #faebdb;
@@ -939,6 +939,8 @@ export default {
     subscribeToUpadate(`rooms/${this.roomID}`, (data) => {
       this.roomObj = data.val();
 
+      if (!this.roomObj.game.lose) this.roomObj.game.lose = [];
+
       // обновление позиций игроков
       // ...
       if (this.roomObj.game) {
@@ -1091,7 +1093,8 @@ export default {
       } else if (this.cells[newPos].type == "exam") {
         // экзамен
         // ...
-        this.question = QUESTIONS[0];
+        const index = Math.floor(Math.random() * QUESTIONS.length + 1);
+        this.question = QUESTIONS[index];
       } else if (this.cells[newPos].type == "default") {
         // предмет
         // ...
@@ -1099,7 +1102,10 @@ export default {
           (el) => el.theme == this.cells[newPos].theme
         );
 
-        if (list.length) this.question = list[0];
+        if (list.length) {
+          const index = Math.floor(Math.random() * list.length + 1);
+          this.question = list[index];
+        }
       } else if (this.cells[newPos].type == "start") {
         balance += 200;
         endRoll();
