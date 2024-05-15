@@ -433,6 +433,7 @@ export default {
 
       for (let item of Object.values(rooms)) {
         if (item.players.indexOf(playerID) != -1 && item.state == "game") {
+          console.log(1);
           this.$router.push({ name: "game", params: { roomID: item.id } });
         }
       }

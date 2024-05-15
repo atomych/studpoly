@@ -1,5 +1,5 @@
 <template>
-  <div class="player" :class="{ main: main }">
+  <div class="player" :class="{ main: main, red: money <= 0 }">
     <div class="photo">
       <img src="../assets/img/player0.png" alt="" v-if="photo == 0" />
       <img src="../assets/img/player1.png" alt="" v-if="photo == 1" />
@@ -7,7 +7,8 @@
       <img src="../assets/img/player3.png" alt="" v-if="photo == 3" />
     </div>
     <div class="name">{{ name }}</div>
-    <div class="money">${{ money }}</div>
+    <div class="money" v-if="money > 0">${{ money }}</div>
+    <div class="money red" v-if="money <= 0">отчислен</div>
   </div>
 </template>
 
@@ -29,6 +30,10 @@
 
   &.main {
     background-color: #ffdf8f;
+  }
+
+  &.red {
+    background-color: #3e3e3e;
   }
 
   .photo {
@@ -68,6 +73,11 @@
     font-family: "Aven";
 
     font-size: 30px;
+
+    &.red {
+      font-size: 25px;
+      color: #fe682f;
+    }
   }
 }
 </style>

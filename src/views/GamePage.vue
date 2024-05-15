@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" :class="{ black: loseTemp == true }">
     <div class="bar">
       <game-player
         :name="mainPlayer.name"
@@ -129,62 +129,91 @@
       <div class="bottom">
         <div class="cell default blue">
           <field-cell
-            :obj="cells[21]"
+            :obj="cells[29]"
             :text="'теория вероятности'"
           ></field-cell>
         </div>
         <div class="cell default blue">
-          <field-cell :obj="cells[29]" :text="'линейная алгебра'"></field-cell>
+          <field-cell :obj="cells[28]" :text="'линейная алгебра'"></field-cell>
         </div>
         <div class="cell money default">
-          <field-cell :obj="cells[28]" :text="'сбор средств'"></field-cell>
+          <field-cell :obj="cells[27]" :text="'сбор средств'"></field-cell>
         </div>
         <div class="cell default blue">
-          <field-cell :obj="cells[27]" :text="'высшая математика'"></field-cell>
+          <field-cell :obj="cells[26]" :text="'высшая математика'"></field-cell>
         </div>
         <div class="cell exam default">
-          <field-cell :obj="cells[26]" :text="'экзамен'"></field-cell>
+          <field-cell :obj="cells[25]" :text="'экзамен'"></field-cell>
         </div>
         <div class="cell money default">
-          <field-cell :obj="cells[25]" :text="'сбор средств'"></field-cell>
+          <field-cell :obj="cells[24]" :text="'сбор средств'"></field-cell>
         </div>
         <div class="cell default green">
-          <field-cell :obj="cells[24]" :text="'физкультура'"></field-cell>
+          <field-cell :obj="cells[23]" :text="'физкультура'"></field-cell>
         </div>
         <div class="cell chance default">
-          <field-cell :obj="cells[23]" :text="'шанс'"></field-cell>
+          <field-cell :obj="cells[22]" :text="'шанс'"></field-cell>
         </div>
         <div class="cell default green">
-          <field-cell :obj="cells[22]" :text="'бжд'"></field-cell>
+          <field-cell :obj="cells[21]" :text="'бжд'"></field-cell>
         </div>
       </div>
-      <div class="window">
-        <div class="chat">
-          <div class="messages">
-            <div
-              class="messages__item"
-              v-for="(item, idx) in messagesList"
-              :key="idx"
-            >
-              {{ item }}
-            </div>
+      <button class="roll" v-if="canRoll" @click="roll()">Бросить кубик</button>
+      <div class="chat">
+        <div class="messages">
+          <div
+            class="messages__item"
+            :class="{
+              green: item.color == 'green',
+              blue: item.color == 'blue',
+            }"
+            v-for="(item, idx) in messagesList"
+            :key="idx"
+          >
+            {{ item.text }}
           </div>
-          <input type="text" class="text" v-model="messageText" />
-          <button class="send" @click="sendMessage()">Отправить</button>
         </div>
-        <div class="btns">
-          <button @click="roll()" v-if="canRoll">Бросить</button>
+        <div class="control">
+          <input type="text" class="text" v-model="messageText" />
+          <button class="send" @click="sendMessage()">отправить</button>
         </div>
       </div>
-      <div class="mask" v-if="question"></div>
+      <div class="mask" v-if="mask" :class="{ black: loseTemp }"></div>
       <div class="question" v-if="question">
-        <div class="text">fdsfsdfsfs</div>
+        <div class="text">{{ question.text }}</div>
         <div class="answers">
-          <div class="answer a1">1</div>
-          <div class="answer a2">2</div>
-          <div class="answer a3">3</div>
-          <div class="answer a4">4</div>
+          <div
+            class="answer"
+            :class="{ a1: idx == 0, a2: idx == 1, a3: idx == 2, a4: idx == 3 }"
+            v-for="(item, idx) in question.answers"
+            :key="idx"
+            @click="sendAnswer(idx)"
+          >
+            {{ item }}
+          </div>
         </div>
+      </div>
+      <div class="win" v-if="winTemp">
+        <div class="title">поздравляем!!!</div>
+        <div class="text">
+          Ты стал самым лучшим студентом<br />
+          и смог получить диплом
+        </div>
+        <button class="back" @click="$router.push({ name: 'entry' })">
+          вернуться на главный экран
+        </button>
+      </div>
+      <div class="lose" v-if="loseTemp">
+        <div class="title">отчислен!!!</div>
+        <div class="text">
+          К сожалению, на твоём балансе не <br />
+          осталось средств. Ты не можешь<br />
+          продолжать игру дальше. Ждём тебя<br />
+          на второй год
+        </div>
+        <button class="back" @click="$router.push({ name: 'entry' })">
+          вернуться на главный экран
+        </button>
       </div>
     </div>
   </div>
@@ -202,6 +231,12 @@
   font-weight: 400;
 }
 
+@font-face {
+  font-family: "MontReg";
+  src: url("../assets/fonts/MontserratAlternates-Regular.ttf");
+  font-weight: 600;
+}
+
 .container {
   width: 100%;
 
@@ -209,6 +244,10 @@
   justify-content: center;
 
   padding: 20px;
+
+  &.black {
+    background-color: #292929;
+  }
 }
 
 .bar {
@@ -240,16 +279,148 @@
 
   background: url("../assets/img/background.png");
 
+  .lose {
+    position: absolute;
+
+    top: 50px;
+    left: 50%;
+    transform: translate(-50%, 0);
+
+    width: 90%;
+    height: 700px;
+
+    background-color: #292929;
+
+    z-index: 1000;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    .title {
+      font-family: "Aven";
+      font-size: 60px;
+      color: #fe682f;
+
+      margin-bottom: 100px;
+    }
+
+    .text {
+      font-family: "MontReg";
+      font-size: 30px;
+      text-align: center;
+      color: #faebdb;
+    }
+
+    .back {
+      display: block;
+      position: absolute;
+      color: #faebdb;
+
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+
+      font-family: "Aven";
+      font-size: 20px;
+
+      background-color: #fe6a2f85;
+
+      padding: 20px 25px;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      border-radius: 27px;
+    }
+  }
+
+  .win {
+    position: absolute;
+
+    top: 50px;
+    left: 50%;
+    transform: translate(-50%, 0);
+
+    width: 90%;
+    height: 700px;
+
+    background-color: #ffdf8f;
+
+    z-index: 1000;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    .title {
+      font-family: "Aven";
+      font-size: 60px;
+      color: #fe682f;
+
+      margin-bottom: 100px;
+    }
+
+    .text {
+      font-family: "MontReg";
+      font-size: 30px;
+      text-align: center;
+    }
+
+    .back {
+      display: block;
+      position: absolute;
+
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+
+      font-family: "Aven";
+      font-size: 20px;
+
+      background-color: #fe6a2f85;
+
+      padding: 20px 25px;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      border-radius: 27px;
+    }
+  }
+
+  .roll {
+    font-family: "Lobelia";
+
+    position: absolute;
+    top: 350px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    background-color: #45ac8f;
+    color: #fff;
+    font-size: 20px;
+
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+
+    cursor: pointer;
+  }
+
   .mask {
     position: absolute;
 
     width: 100%;
     height: 100%;
 
-    background-color: #000;
-    opacity: 0.4;
+    background-color: #fff;
 
     z-index: 100;
+
+    &.black {
+      background-color: #292929;
+    }
   }
 
   .question {
@@ -328,49 +499,69 @@
     }
   }
 
-  .window {
-    width: 500px;
-    height: 500px;
+  .chat {
+    display: flex;
+    flex-direction: column;
+
+    width: 730px;
+    height: 350px;
+
+    border: 1px solid #ababab;
 
     position: absolute;
-
-    top: 50%;
     left: 50%;
+    bottom: 220px;
 
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, 0);
 
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 20px;
 
-    background-color: #fff;
+    .messages {
+      flex-grow: 1;
+      overflow-y: scroll;
+      margin-bottom: 10px;
 
-    padding: 10px;
+      &__item {
+        font-family: "Aven";
+        margin-bottom: 15px;
 
-    .chat {
-      width: 300px;
-      height: 400px;
-      border: 1px solid #000;
+        &.green {
+          color: #45ac8f;
+        }
 
-      display: flex;
-      flex-direction: column;
-
-      .messages {
-        flex-grow: 1;
-        margin-bottom: 10px;
-
-        overflow-y: scroll;
-
-        &__item {
-          font-size: 18px;
-          margin-bottom: 5px;
+        &.blue {
+          color: #9c76c1;
         }
       }
+    }
+
+    .control {
+      display: flex;
 
       .text {
-        border: 1px solid #000;
+        border-radius: 8px;
+
+        border: none;
+        outline: none;
+
+        flex-grow: 1;
+        margin-right: 20px;
+        font-family: "Aven";
+        color: #8a8a8a;
+      }
+
+      .send {
+        font-family: "Aven";
+        background-color: #45ac8f;
+        color: #fff;
+        font-size: 10px;
+        padding: 14px 30px;
+        border-radius: 8px;
+        border: none;
       }
     }
+
+    background-color: #ffdf8f;
   }
 
   .left,
@@ -669,8 +860,9 @@
 </style>
 
 <script>
-import { CELLS } from "../js/studpoly";
+import { CELLS, QUESTIONS } from "../js/studpoly";
 import { readData, subscribeToUpadate, writeData } from "../firebase/database";
+import { getKey } from "../js/key";
 
 import FieldCell from "../components/FieldCell.vue";
 import GamePlayer from "../components/GamePlayer.vue";
@@ -686,6 +878,9 @@ export default {
       roomObj: {},
       messageText: "",
       question: null,
+      mask: false,
+      winTemp: false,
+      loseTemp: false,
     };
   },
 
@@ -729,6 +924,7 @@ export default {
                   messages: [
                     { from: "Система", text: "Добро пожаловать в вузополию!" },
                   ],
+                  lose: [],
                 };
 
                 for (let i = 0; i < 4; i++) this.cells[0].players.push(i);
@@ -742,6 +938,40 @@ export default {
 
     subscribeToUpadate(`rooms/${this.roomID}`, (data) => {
       this.roomObj = data.val();
+
+      // обновление позиций игроков
+      // ...
+      if (this.roomObj.game) {
+        for (let item of this.cells) {
+          item.players = [];
+        }
+
+        for (let i = 0; i < 4; i++) {
+          this.cells[this.roomObj.game.position[i]].players.push(i);
+        }
+      }
+
+      // проверка на победу
+      // ...
+      if (this.roomObj.game && this.roomObj.game.lose) {
+        const index = this.roomObj.players.indexOf(this.id);
+        if (
+          this.roomObj.game.lose.length == 3 &&
+          this.roomObj.game.lose.indexOf(index) == -1
+        ) {
+          this.win();
+        }
+
+        // удаление пригравших с поля
+        // ...
+        for (let cell of this.cells) {
+          for (let item of this.roomObj.game.lose) {
+            if (cell.players.indexOf(item) != -1) {
+              cell.players = cell.players.filter((el) => el != item);
+            }
+          }
+        }
+      }
     });
   },
 
@@ -784,7 +1014,10 @@ export default {
 
       if (this.roomObj.game) {
         for (let item of this.roomObj.game.messages) {
-          res.push(`${item.from}: ${item.text}`);
+          res.push({
+            text: `${item.from}: ${item.text}`,
+            color: item.from == "Система" ? "green" : "blue",
+          });
         }
       }
 
@@ -806,8 +1039,8 @@ export default {
       const currentPos = this.roomObj.game.position[this.roomObj.game.move];
       let newPos = 0;
 
-      if (sum + currentPos < 39) newPos = sum + currentPos;
-      else newPos = sum - (39 - currentPos) - 1;
+      if (sum + currentPos <= 39) newPos = sum + currentPos;
+      else newPos = sum + currentPos - 40;
 
       this.cells[currentPos].players = this.cells[currentPos].players.filter(
         (item) => item != this.roomObj.game.move
@@ -824,14 +1057,113 @@ export default {
       // Другие игроки видят у себя, что игрок что то делает, но ходить пока не могут
       // ...
       // ... обработка клетки
-      let newBalance = 1000;
+      let balance = this.roomObj.game.money[this.roomObj.game.move];
+
+      console.log(this.cells[newPos].type, newPos);
+
+      const endRoll = () => {
+        writeData(
+          `rooms/${this.roomID}/game/money/${this.roomObj.game.move}`,
+          balance
+        );
+
+        let newMove = 0;
+
+        do {
+          if (this.roomObj.game.move == 3) newMove = 0;
+          else {
+            newMove = this.roomObj.game.move + 1;
+          }
+        } while (this.roomObj.game.lose.indexOf(newMove) != -1);
+
+        writeData(`rooms/${this.roomID}/game/move`, newMove);
+
+        if (balance <= 0) this.lose();
+      };
+
+      if (this.cells[newPos].type == "money") {
+        balance = balance - 150;
+        endRoll();
+      } else if (this.cells[newPos].type == "chance") {
+        const num = Math.floor(Math.random() * 2 + 1);
+        balance = num % 2 == 0 ? balance + 100 : balance + 0;
+        endRoll();
+      } else if (this.cells[newPos].type == "exam") {
+        // экзамен
+        // ...
+        this.question = QUESTIONS[0];
+      } else if (this.cells[newPos].type == "default") {
+        // предмет
+        // ...
+        const list = QUESTIONS.filter(
+          (el) => el.theme == this.cells[newPos].theme
+        );
+
+        if (list.length) this.question = list[0];
+      } else if (this.cells[newPos].type == "start") {
+        balance += 200;
+        endRoll();
+      } else if (this.cells[newPos].type == "home") {
+        writeData(
+          `rooms/${this.roomObj.id}/game/position/${this.roomObj.game.move}`,
+          30
+        );
+        this.cells[10].players = this.cells[10].players.filter(
+          (el) => el != this.roomObj.game.move
+        );
+        this.cells[30].players.push(this.roomObj.game.move);
+        endRoll();
+      } else if (this.cells[newPos].type == "tohome") {
+        writeData(
+          `rooms/${this.roomObj.id}/game/position/${this.roomObj.game.move}`,
+          10
+        );
+        this.cells[30].players = this.cells[30].players.filter(
+          (el) => el != this.roomObj.game.move
+        );
+        this.cells[10].players.push(this.roomObj.game.move);
+        endRoll();
+      }
+    },
+
+    lose() {
+      // игрок проиграл
       // ...
-      // Произошла обработка клетки, игрок выполнил действия
-      // Теперь надо передать ход, изменить баланс игрока
+      console.log("игрок  проиграл");
+      console.log(`игрок: ${this.id}`);
+
+      if (this.roomObj.game.lose) {
+        this.roomObj.game.lose.push(this.roomObj.players.indexOf(this.id));
+      } else {
+        this.roomObj.game.lose = [this.roomObj.players.indexOf(this.id)];
+      }
+
+      writeData(`rooms/${this.roomID}/game/lose`, this.roomObj.game.lose);
+
+      localStorage.setItem("STUDPOLY_PLAYER_ID", getKey());
+
+      this.loseTemp = true;
+      this.mask = true;
+    },
+
+    win() {
+      this.mask = true;
+      this.winTemp = true;
+      localStorage.setItem("STUDPOLY_PLAYER_ID", getKey());
+    },
+
+    sendAnswer(answer) {
+      let balance = this.roomObj.game.money[this.roomObj.game.move];
+
+      if (this.question.right == answer) {
+        balance += 200;
+      } else {
+        balance -= 200;
+      }
 
       writeData(
         `rooms/${this.roomID}/game/money/${this.roomObj.game.move}`,
-        newBalance
+        balance
       );
 
       let newMove = 0;
@@ -839,6 +1171,10 @@ export default {
       else newMove = this.roomObj.game.move + 1;
 
       writeData(`rooms/${this.roomID}/game/move`, newMove);
+
+      this.question = null;
+
+      if (balance <= 0) this.lose();
     },
 
     sendMessage() {
