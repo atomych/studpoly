@@ -1173,8 +1173,13 @@ export default {
       );
 
       let newMove = 0;
-      if (this.roomObj.game.move == 3) newMove = 0;
-      else newMove = this.roomObj.game.move + 1;
+
+      do {
+        if (this.roomObj.game.move == 3) newMove = 0;
+        else {
+          newMove = this.roomObj.game.move + 1;
+        }
+      } while (this.roomObj.game.lose.indexOf(newMove) != -1);
 
       writeData(`rooms/${this.roomID}/game/move`, newMove);
 
