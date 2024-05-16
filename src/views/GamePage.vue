@@ -860,7 +860,7 @@
 </style>
 
 <script>
-import { CELLS, QUESTIONS } from "../js/studpoly";
+import { CELLS, QUESTIONS, THEMES } from "../js/studpoly";
 import { readData, subscribeToUpadate, writeData } from "../firebase/database";
 import { getKey } from "../js/key";
 
@@ -939,7 +939,8 @@ export default {
     subscribeToUpadate(`rooms/${this.roomID}`, (data) => {
       this.roomObj = data.val();
 
-      if (!this.roomObj.game.lose) this.roomObj.game.lose = [];
+      if (this.roomObj.game && !this.roomObj.game.lose)
+        this.roomObj.game.lose = [];
 
       // обновление позиций игроков
       // ...
@@ -1041,6 +1042,13 @@ export default {
       const currentPos = this.roomObj.game.position[this.roomObj.game.move];
       let newPos = 0;
 
+      this.addMessage({
+        from: "Система",
+        text: `Игорок ${
+          this.roomObj.game.names[this.roomObj.game.move]
+        } выбросил ${firstNum} и ${secondNum}.`,
+      });
+
       if (sum + currentPos <= 39) newPos = sum + currentPos;
       else newPos = sum + currentPos - 40;
 
@@ -1061,22 +1069,23 @@ export default {
       // ... обработка клетки
       let balance = this.roomObj.game.money[this.roomObj.game.move];
 
-      console.log(this.cells[newPos].type, newPos);
-
       const endRoll = () => {
         writeData(
           `rooms/${this.roomID}/game/money/${this.roomObj.game.move}`,
           balance
         );
 
-        let newMove = 0;
+        let newMove = this.roomObj.game.move;
 
         do {
-          if (this.roomObj.game.move == 3) newMove = 0;
-          else {
-            newMove = this.roomObj.game.move + 1;
-          }
+          newMove += 1;
+          if (newMove == 4) newMove = 0;
         } while (this.roomObj.game.lose.indexOf(newMove) != -1);
+
+        this.addMessage({
+          from: "Система",
+          text: `Ходит игрок ${this.roomObj.game.names[newMove]}.`,
+        });
 
         writeData(`rooms/${this.roomID}/game/move`, newMove);
 
@@ -1084,16 +1093,60 @@ export default {
       };
 
       if (this.cells[newPos].type == "money") {
+        this.addMessage({
+          from: "Система",
+          text: `Игрок ${
+            this.roomObj.game.names[this.roomObj.game.move]
+          } попадает на поле Сбор денег.`,
+        });
+
         balance = balance - 150;
+
+        this.addMessage({
+          from: "Система",
+          text: `Игрок ${
+            this.roomObj.game.names[this.roomObj.game.move]
+          } теряет 150.`,
+        });
+
         endRoll();
       } else if (this.cells[newPos].type == "chance") {
+        this.addMessage({
+          from: "Система",
+          text: `Игрок ${
+            this.roomObj.game.names[this.roomObj.game.move]
+          } попадает на поле Шанс.`,
+        });
         const num = Math.floor(Math.random() * 2 + 1);
-        balance = num % 2 == 0 ? balance + 100 : balance + 0;
+        if (num % 2 == 0) {
+          this.addMessage({
+            from: "Система",
+            text: `Игрок ${
+              this.roomObj.game.names[this.roomObj.game.move]
+            } получает 100.`,
+          });
+          balance += 100;
+        } else {
+          this.addMessage({
+            from: "Система",
+            text: `Игрок ${
+              this.roomObj.game.names[this.roomObj.game.move]
+            } не получает денег.`,
+          });
+        }
         endRoll();
       } else if (this.cells[newPos].type == "exam") {
         // экзамен
         // ...
-        const index = Math.floor(Math.random() * QUESTIONS.length + 1);
+        const index = Math.floor(Math.random() * QUESTIONS.length);
+        this.addMessage({
+          from: "Система",
+          text: `Игрок ${
+            this.roomObj.game.names[this.roomObj.game.move]
+          } попадает на поле Экзамен по теме: ${
+            THEMES[QUESTIONS[index].theme]
+          }.`,
+        });
         this.question = QUESTIONS[index];
       } else if (this.cells[newPos].type == "default") {
         // предмет
@@ -1103,11 +1156,25 @@ export default {
         );
 
         if (list.length) {
-          const index = Math.floor(Math.random() * list.length + 1);
+          const index = Math.floor(Math.random() * list.length);
+
+          this.addMessage({
+            from: "Система",
+            text: `Игрок ${
+              this.roomObj.game.names[this.roomObj.game.move]
+            } попадает на поле Предмет: ${THEMES[QUESTIONS[index].theme]}.`,
+          });
+
           this.question = list[index];
         }
       } else if (this.cells[newPos].type == "start") {
         balance += 200;
+        this.addMessage({
+          from: "Система",
+          text: `Игрок ${
+            this.roomObj.game.names[this.roomObj.game.move]
+          } попадает на поле Старт и получает 200.`,
+        });
         endRoll();
       } else if (this.cells[newPos].type == "home") {
         writeData(
@@ -1118,6 +1185,12 @@ export default {
           (el) => el != this.roomObj.game.move
         );
         this.cells[30].players.push(this.roomObj.game.move);
+        this.addMessage({
+          from: "Система",
+          text: `Игрок ${
+            this.roomObj.game.names[this.roomObj.game.move]
+          } попадает на поле Общежитие.`,
+        });
         endRoll();
       } else if (this.cells[newPos].type == "tohome") {
         writeData(
@@ -1128,15 +1201,32 @@ export default {
           (el) => el != this.roomObj.game.move
         );
         this.cells[10].players.push(this.roomObj.game.move);
+        this.addMessage({
+          from: "Система",
+          text: `Игрок ${
+            this.roomObj.game.names[this.roomObj.game.move]
+          } попадает на поле Общежитие.`,
+        });
         endRoll();
       }
+    },
+
+    addMessage(message) {
+      writeData(`rooms/${this.roomID}/game/messages`, [
+        ...this.roomObj.game.messages,
+        { from: message.from, text: message.text },
+      ]);
     },
 
     lose() {
       // игрок проиграл
       // ...
-      console.log("игрок  проиграл");
-      console.log(`игрок: ${this.id}`);
+      this.addMessage({
+        from: "Система",
+        text: `Игрок ${
+          this.roomObj.game.names[this.roomObj.game.move]
+        } не справился и был отчислен.`,
+      });
 
       if (this.roomObj.game.lose) {
         this.roomObj.game.lose.push(this.roomObj.players.indexOf(this.id));
@@ -1163,8 +1253,20 @@ export default {
 
       if (this.question.right == answer) {
         balance += 200;
+        this.addMessage({
+          from: "Система",
+          text: `Игрок ${
+            this.roomObj.game.names[this.roomObj.game.move]
+          } правильно отчетает на вопрос и получает 200.`,
+        });
       } else {
         balance -= 200;
+        this.addMessage({
+          from: "Система",
+          text: `Игрок ${
+            this.roomObj.game.names[this.roomObj.game.move]
+          } неправильно отчетает на вопрос и теряет 200.`,
+        });
       }
 
       writeData(
@@ -1172,14 +1274,17 @@ export default {
         balance
       );
 
-      let newMove = 0;
+      let newMove = this.roomObj.game.move;
 
       do {
-        if (this.roomObj.game.move == 3) newMove = 0;
-        else {
-          newMove = this.roomObj.game.move + 1;
-        }
+        newMove += 1;
+        if (newMove == 4) newMove = 0;
       } while (this.roomObj.game.lose.indexOf(newMove) != -1);
+
+      this.addMessage({
+        from: "Система",
+        text: `Ходит игрок ${this.roomObj.game.names[newMove]}.`,
+      });
 
       writeData(`rooms/${this.roomID}/game/move`, newMove);
 
